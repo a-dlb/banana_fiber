@@ -25,9 +25,10 @@ rho_m = 1.10e3 # kg/m^3
 
 matrix = [E_m, V_m, G_m, nu_m, rho_m]
 
-E_x, E_y, G, nu_xy, rho = mixture(fiber, matrix)
+hemp = mixture(fiber, matrix)
 
-ply1 = Ply(E_x, E_y, G, nu_xy, theta=0)
+# *list déroule la liste
+ply1 = Ply(*hemp, t=1, theta=0)
 
 sigma_1 = 10 # MPa
 length = 200 # mm

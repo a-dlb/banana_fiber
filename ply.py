@@ -16,14 +16,16 @@ class Ply:
     E_y: float # MPa
     G_xy: float  # MPa
     nu_xy: float # -
+    rho: float # kg/m^3
+    
+    t: float # mm
+    theta: float = 0 # deg
     
     X_t: float = 0 # MPa
     X_c: float = 0 # MPa
     Y_t: float = 0 # MPa
     Y_c: float = 0 # MPa
     S: float   = 0 # MPa
-    
-    theta: float = 0 # deg
     
     # Note: cannot initialize np.ndarray = np.zeros(3) in a class, so we need to use field()
     #       default_factory = function called when creating an instance of the class.
