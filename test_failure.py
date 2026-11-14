@@ -9,7 +9,9 @@ from ply import Ply
 from laminate import Laminate
 import numpy as np
 
-Q = np.array([[200, 5, 0], [5, 20, 0], [0, 0, 6]]) * 1e3
+# TP4 Ex. 1 (pressure vessel)
+
+Q = np.array([[200, 3, 0], [3, 10, 0], [0, 0, 5]]) * 1e3
 
 nu_xy = Q[0, 1] / Q[1, 1]
 nu_yx = Q[0, 1] / Q[0, 0]
@@ -19,26 +21,32 @@ E_y = Q[1, 1] / m
 G_xy = Q[2, 2]
 mat = [E_x, E_y, G_xy, nu_xy, 1500]
 
-strength = dict(X_t=1270, X_c=2500, Y_t=60, Y_c=200, S=70) # MPa
+strength = dict(X_t=1270, X_c=1130, Y_t=42, Y_c=141, S=63) # MPa
 
-ply1 = Ply(*mat, t=1, theta= 15, **strength)
-ply2 = Ply(*mat, t=1, theta=-15, **strength)
-ply3 = Ply(*mat, t=1, theta= 90, **strength)
-ply4 = Ply(*mat, t=1, theta= 90, **strength)
-ply5 = Ply(*mat, t=1, theta=-15, **strength)
-ply6 = Ply(*mat, t=1, theta= 15, **strength)
+ply1 = Ply(*mat, t=1, theta=-45, **strength)
+ply2 = Ply(*mat, t=1, theta= 45, **strength)
+ply3 = Ply(*mat, t=1, theta= 45, **strength)
+ply4 = Ply(*mat, t=1, theta=-45, **strength)
 
-lam = Laminate([ply1, ply2, ply3, ply4, ply5, ply6])
+lam = Laminate([ply1, ply2, ply3, ply4])
 
 print("A matrix : \n", lam.A)
 print("B matrix : \n", lam.B)
 print("D matrix : \n", lam.D)
 
-loading = [2500, 0, 0, 1500, 0, 0]
+loading = [250, 500, 0, 0, 0, 0]
 
 lam.loading = loading
+
+print("Max. stress" + "\n" + 30 * "=")
 for k, p in enumerate(lam.plies):
     failure = p.failure("max_stress")
-    print(f"ply{k+1} : SF = {failure[0]:.2f}, loc = {failure[1]}")
+    print(f"ply{k+1} : SF = {failure[0]:.3f}, loc = {failure[1]}")
+    
+print("\n")
+print("Tsai-Wu" + "\n" + 30 * "=")
+for k, p in enumerate(lam.plies):
+    failure = p.failure("tsai-wu")
+    print(f"ply{k+1} : SF = {failure[0]:.3f}, loc = {failure[1]}")
     
     

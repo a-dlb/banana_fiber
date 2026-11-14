@@ -221,18 +221,59 @@ class Ply:
         return min(SF)
     
     
+    def _tsai_wu(self):
+        
+        X_t = self.X_t
+        X_c = self.X_c
+        Y_t = self.Y_t
+        Y_c = self.Y_c
+        S   = self.S
+        
+        F_1 = 1/X_t - 1/X_c
+        F_2 = 1/Y_t - 1/Y_c
+        
+        # F_6 = = 0 assumed here
+    
+        F_11 = 1/(X_t * X_c)
+        F_22 = 1/(Y_t * Y_c)
+        
+        F_66 = 1/(S ** 2)
+        
+        F_12 = -0.5 * (np.sqrt(X_t * X_c * Y_t * Y_c) ** (-1))
+        
+        sig_x = self.sigma_xyz[0]
+        sig_y = self.sigma_xyz[1]
+        sig_s = self.sigma_xyz[2]
+        
+        a = (F_11 * (sig_x ** 2) + F_22 * (sig_y ** 2) + F_66 * (sig_s ** 2) 
+             + 2 * F_12 * sig_x * sig_y)
+        
+        b = F_1 * sig_x + F_2 * sig_y
+        
+        c = -1
+        
+        delta = (b ** 2) - 4 * a * c
+        
+        sols =[(-b + np.sqrt(delta))/(2 * a), (-b - np.sqrt(delta))/(2 * a)]
+        
+        return min(s for s in sols if s > 0)
+    
+    
     def failure(self, crit="max_stress"):
         
         if crit == "max_stress":
             
             top_SF = self.top._max_stress()
             bot_SF = self.bot._max_stress()
-            
-            return (top_SF, "top") if top_SF <= bot_SF else (bot_SF, "bottom")
         
-            
         elif crit == "tsai-wu":
-            return
+            
+            top_SF = self.top._tsai_wu()
+            bot_SF = self.bot._tsai_wu()
         
         else:
             raise ValueError(f"Failure criteria must be 'max_stress' or 'tsai-wu', not {crit}.")
+            
+        return ((top_SF, "top") if top_SF < bot_SF else (bot_SF, "bottom") if bot_SF > top_SF
+                else (top_SF, "same"))
+    
