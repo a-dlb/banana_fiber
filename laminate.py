@@ -14,6 +14,7 @@ class Laminate:
     
     plies: list
     
+    # Same idea as in class Ply, store only loading and recover eps from loading
     _loading: np.ndarray = field(default_factory = lambda: np.zeros(6), init=False)
     
     @property
@@ -84,16 +85,31 @@ class Laminate:
         return np.asarray(1/3 * sum((self.h_k(k) ** 3 - self.h_k(k-1) ** 3) * p.Q_123 
                                     for k, p in enumerate(self.plies)))
     
+    # We use _loading as the local variable to recover eps, so as in class Ply,
+    # we create getter and setter functions for _loading and modify _loading
+    # when we cant to recover epsilon.
+    
     @property
     def loading(self):
         return self._loading
     
     @loading.setter
     def loading(self, vector):
+        """
+        Loading of the laminate in structural axes (np.array)
+        Elements 0, 1, 2 are the membrane forces N_1, N_2, N_3 (N/mm)
+        Elements 3, 4, 5 are the membrane moments M_1, M_2, M_3 (N)
+        """
         self._loading = np.asarray(vector)
+        
+        eps0 = self.eps0
+        K = self.K
+        
+        for k, p in enumerate(self.plies):
+            p.eps_123 = eps0 + self.h[k] * K
     
     @property
-    def eps(self):
+    def eps0_K(self):
         
         A = self.A
         B = self.B
@@ -102,3 +118,13 @@ class Laminate:
         ABD = np.block([[A, B], [B, D]])
         
         return np.linalg.solve(ABD, self._loading)
+    
+    @property
+    def eps0(self):
+        return self.eps0_K[:3]
+    
+    @property
+    def K(self):
+        return self.eps0_K[3:]
+    
+    

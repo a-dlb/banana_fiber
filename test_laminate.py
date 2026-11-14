@@ -31,5 +31,3 @@ loading = [1000, 500, 250, 0, 0, 0]
 
 lam.loading = loading
 
-print("eps0 : \n", lam.eps[:3])
-print("k : \n", lam.eps[3:])

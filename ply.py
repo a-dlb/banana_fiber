@@ -32,6 +32,7 @@ class Ply:
     #       repr = controls if the variable appears in print(ply).
     #       init = controls if the variable can be initialized when creating an instance of the class.
     # => the two latter args are set to False, since _sigma_123 is a 'private' (kinda) 
+    # Only sigma123 is stored, see below
 
     _sigma_123: np.ndarray = field(default_factory = lambda : np.zeros(3),
                                    init = False, repr = False) # MPa
@@ -118,6 +119,9 @@ class Ply:
     # -> setter: the decorator is a shortcut for field = field.setter(_set),
     #            where _set would be the separately declared setter function.
     #            (Note: .setter() is a method that adds a custom setter function to an object).
+    #
+    # @property: getter function (recover the field from _sigma_123)
+    # @field.setter: setter function (set the field by setting the corresponding _sigma_123)
 
     @property
     def sigma_123(self):
@@ -125,6 +129,9 @@ class Ply:
     
     @sigma_123.setter
     def sigma_123(self, sigma):
+        """
+        Stresses in structural axes (MPa)
+        """
         self._sigma_123 = np.asarray(sigma)
         
     @property
@@ -133,6 +140,9 @@ class Ply:
     
     @eps_123.setter
     def eps_123(self, eps):
+        """
+        Strains in structural axes (-)
+        """
         self._sigma_123 = self.Q_123 @ eps
         
     @property
@@ -141,8 +151,18 @@ class Ply:
     
     @sigma_xyz.setter
     def sigma_xyz(self, sigma):
+        """
+        Stresses in material axes (MPa)
+        """
         self._sigma_123 = self.T_sigma(source="xyz") @ sigma
         
     @property
     def eps_xyz(self):
         return np.linalg.solve(self.Q_xyz, (self.T_sigma(source="123") @ self._sigma_123))
+    
+    @eps_xyz.setter
+    def eps_xyz(self, eps):
+        """
+        Strains in material axes (-)
+        """
+        self._sigma_123 = self.Q_123 @ (self.T_eps(source="xyz") @ eps)
