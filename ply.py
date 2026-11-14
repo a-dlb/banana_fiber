@@ -33,8 +33,8 @@ class Ply:
     #       init = controls if the variable can be initialized when creating an instance of the class.
     # => the two latter args are set to False, since _sigma_123 is a 'private' (kinda) 
 
-    _sigma_123: np.ndarray = field(default_factory = lambda : np.zeros(3)
-                                   , init = False, repr = False) # MPa
+    _sigma_123: np.ndarray = field(default_factory = lambda : np.zeros(3),
+                                   init = False, repr = False) # MPa
     
     @property
     def nu_yx(self):
