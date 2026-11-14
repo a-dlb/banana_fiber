@@ -7,6 +7,7 @@ Created on Fri Nov 13 16:52:26 2026
 """
 
 from dataclasses import dataclass, field
+from copy import copy
 import numpy as np
 
 @dataclass
@@ -36,6 +37,9 @@ class Ply:
 
     _sigma_123: np.ndarray = field(default_factory = lambda : np.zeros(3),
                                    init = False, repr = False) # MPa
+    
+    _K_123: np.ndarray = field(default_factory = lambda : np.zeros(3),
+                               init = False, repr = False) # -
     
     @property
     def nu_yx(self):
@@ -166,3 +170,69 @@ class Ply:
         Strains in material axes (-)
         """
         self._sigma_123 = self.Q_123 @ (self.T_eps(source="xyz") @ eps)
+        
+    
+    @property
+    def K_123(self):
+        return self._K_123
+    
+    @K_123.setter
+    def K_123(self, K):
+        """
+        Ply curvature in structural axes (-)
+        """
+        self._K_123 = np.asarray(K)
+        
+    @property
+    def top(self):
+        """
+        Get the ply stress and strain fields at the top of the ply.
+        """
+        
+        p = copy(self)
+        p.eps_123 = self.eps_123 + self.t / 2 * self.K_123
+        
+        return p
+    
+    @property
+    def bot(self):
+        """
+        Get the ply stress and strain fields at the bottom of the ply.
+        """
+        
+        p = copy(self)
+        p.eps_123 = self.eps_123 - self.t / 2 * self.K_123
+        
+        return p
+    
+
+    def _max_stress(self):
+        
+        sigma_xyz = self.sigma_xyz
+        
+        S_t = [self.X_t, self.Y_t, self.S]
+        S_c = [self.X_c, self.Y_c, self.S]
+        
+        SF = [np.inf if sig == 0
+              else S_t[i] / sig if sig > 0
+              else -S_c[i] / sig
+              for i, sig in enumerate(self.sigma_xyz)]
+        
+        return min(SF)
+    
+    
+    def failure(self, crit="max_stress"):
+        
+        if crit == "max_stress":
+            
+            top_SF = self.top._max_stress()
+            bot_SF = self.bot._max_stress()
+            
+            return (top_SF, "top") if top_SF <= bot_SF else (bot_SF, "bottom")
+        
+            
+        elif crit == "tsai-wu":
+            return
+        
+        else:
+            raise ValueError(f"Failure criteria must be 'max_stress' or 'tsai-wu', not {crit}.")

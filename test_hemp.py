@@ -39,5 +39,5 @@ ply8 = Ply(*hemp, t=0.29, theta=90)
 
 lam = Laminate([ply1, ply2, ply3, ply4, ply5, ply6, ply7, ply8])
 
-loading = [0,5, 0, 0, 0, 0 , 0]
+loading = [0.5, 0, 0, 0, 0 , 0]
 lam.loading = loading

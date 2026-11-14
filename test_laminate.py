@@ -30,4 +30,3 @@ print("D matrix : \n", lam.D)
 loading = [1000, 500, 250, 0, 0, 0]
 
 lam.loading = loading
-

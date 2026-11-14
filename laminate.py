@@ -106,7 +106,8 @@ class Laminate:
         K = self.K
         
         for k, p in enumerate(self.plies):
-            p.eps_123 = eps0 + self.h[k] * K
+            p.K_123 = K
+            p.eps_123 = eps0 + self.z[k] * K
     
     @property
     def eps0_K(self):
@@ -126,5 +127,4 @@ class Laminate:
     @property
     def K(self):
         return self.eps0_K[3:]
-    
     
